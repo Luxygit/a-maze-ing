@@ -4,3 +4,6 @@ __pycache__
 */__pycache__
 *.swp
 */*.swp
+maze.txt
+.venv
+*.whl
