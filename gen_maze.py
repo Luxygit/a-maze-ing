@@ -17,26 +17,25 @@ defining a MazeGenerator class:
 
     method:  get_unvisited_neighbours(cell: Cell) -> list(tuple[str: Cell):
         init empty enighbours llist array
-        for each cardiinal dirction:
-            calc dx, dy offset coords
-        if neighbour  cordinates exists in bounds and if candiidate.visited is false:
+        check alll 4 adjacent directions
+        if neighbour coor exists in bounds and candiidate.visited is false:
             append tracking pair cell to choices array
         return neighbours  array
     
-    method: remove_shared_wall(cell_current, cell_neighbour, direction:str) :
+    method: remove_shared_wall(cell_current, cell_neihbour, direction:str) :
         if dir is NORTH:
             substract north from cell_current.walls bitmask
             substract south from cell_neighb.walls bitmask
         apply the same for east south and west
 
-    method: generate_base_perfect() -> None:
+    method: generate() -> list[list[Cell]]:
         init history stack as empty list 
         pick starting cell, set visited=true, push to historystack
         while historystack is not empty:
             current  = top item of history stack
-            valid_options = call getunivisitedneighbouts(current)
+            valid_options = call get_univisitedneighbouts(current)
             if valod options is not empty:
-                select a random element from tupple from valid options(chosen_dir, chosen_cell)
+                pick random choice direction neighor cell from list
                 set chosem_cell_visited = true
                 push chosen_cell t to histort stack
             else
@@ -71,7 +70,7 @@ defining a MazeGenerator class:
             force cell.walls to fully closed
     
     method execute_gen() -> list[lis[Cell]]:
-        call gen_base_perfect()
+        call generate()
         if perfect flag isTrue:
             call force_forty_two()
         else:
