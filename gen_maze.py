@@ -1,27 +1,18 @@
 """
 Handling cell flags, 2d arrays and board gen.
 Must be packagable into a distrib package.
+"""
+
+import random
 
 
-defining Cell class:
-    properties:
-        x, y, visited default to false, walls int 4-bit bitmask init to 15
-        binary 1111 means all walls are closed
-
-defining a MazeGenerator class:
-    init (width, height, perfect seed=None)
-        store args
-        init random seed state if provided
-        initiaise 2d array matrix with Cell objects
-        defining bitmask North=1 east=2 South =4 West=8
-
-    method:  get_unvisited_neighbours(cell: Cell) -> list(tuple[str: Cell):
-        init empty enighbours llist array
-        check alll 4 adjacent directions
-        if neighbour coor exists in bounds and candiidate.visited is false:
-            append tracking pair cell to choices array
-        return neighbours  array
-    
+class Cell:
+    def __init__(self, x: int, y: int, visited: bool = False, walls: int = 15) -> None:
+        self.x = x
+        self.y = y
+        self.visited = visited
+        self.walls = walls
+"""
     method: remove_shared_wall(cell_current, cell_neihbour, direction:str) :
         if dir is NORTH:
             substract north from cell_current.walls bitmask
@@ -61,14 +52,6 @@ defining a MazeGenerator class:
                 fetch cell sittin behind that wall side
                 call remove_wall(current_cell, neighbout_cell, chosen_dir)
     
-    methd: fforce_forty_two -> None::
-        if width < 15 or height < 15:
-            print warning
-            return
-        calc center offset coords
-        for specific coord array set mapping out a 4 and 2 block shape:
-            force cell.walls to fully closed
-    
     method execute_gen() -> list[lis[Cell]]:
         call generate()
         if perfect flag isTrue:
@@ -86,4 +69,103 @@ defining a MazeGenerator class:
                 append hex to current-row_string
             append cuurent row string to rowsstring list
         return rows string list
+"""
+class MazeGenerator:
+    NORTH = 1
+    EAST = 2
+    SOUTH = 4
+    WEST = 8
 
+    def __init__(
+            self,
+            width: int,
+            height: int,
+            entry_coord: tuple[int, int],
+            exit_coord: tuple[int, int],
+            seed: int,
+            perfect: bool
+            ) -> None:
+        self.width = width
+        self.height = height
+        self.entry_coord = entry_coord
+        self.exit_coord = exit_coord
+        self.perfect = perfect
+
+        random.seed(seed)
+        self.blocked_cells: set[tuple[int, int]] = set()
+        self.grid: list[list[int]] = []
+        for y in range(self.height):
+            row: list[Cell] = []
+            for x in range(self.width):
+                row.append(Cell(x, y))
+            self.grid.append(row)
+        self._carve_42_pattern()
+        self.print_grid()
+
+    
+    def _carve_42_pattern(self) -> set:
+        if self.width < 9 or self.height < 7:
+            return
+        start_x = (self.width - 7) // 2
+        start_y = (self.height - 5) // 2
+        blocked_offsets = {
+                (0, 0), (2, 0),
+                (0, 1), (2, 1),
+                (0, 2), (1, 2), (2, 2),
+                        (2, 3),
+                        (2, 4),
+                (4, 0), (5, 0), (6, 0),
+                                (6, 1),
+                (4, 2), (5, 2), (6, 2),
+                (4, 3),
+                (4, 4), (5, 4), (6, 4) 
+                }
+        for dx, dy in blocked_offsets:
+            self.blocked_cells.add((start_x + dx, start_y + dy))
+
+    def _get_valid_neighbors(self, x: int, y:int
+            )-> list[tuple[tuple[int, int], int, int]]:
+        neighbors= []
+        directions = [
+                (0, -1, self.NORTH, self.SOUTH),
+                (1, 0, self.EAST, self.WEST),
+                (0, 1, self.SOUTH, self.NORTH),
+                (-1, 0, self.WEST, self.EAST)
+                ]
+        for dx, dy, wall_curr, wall_next in directions:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.width and 0 <= ny < self.height:
+                if (nx, ny) not in self.blocked_cells:
+                    if not self.grid[ny][nx].visited:
+                        neighbors.append((nx, ny), wall_curr, wall_next)
+        return neighbors
+
+    def _generate_perfect_maze(self) -> None:
+        start_x, start_y = self.entry_coord
+        sef.grid[start_y][start_x].visited = True
+        stack [(start_x, start_y)]
+        while stack:
+            cx, cy = stack[-1]
+            neighbors = self._get_valid_neighbors(cx, cy)
+            if neighbors:
+                for n in neighbors:
+                    
+                    stack.append(n)
+                    n.visited = True
+
+            else:
+                stack.pop
+
+#TESTING PRINT GRID       
+    def print_grid(self) -> None:
+        for y in range(self.height):
+            row_chars = []
+            for x in range(self.width):
+                if (x, y) in self.blocked_cells:
+                    row_chars.append("  ")
+                else:
+                    row_chars.append(f"{self.grid[y][x].walls}")
+            print(" ".join(row_chars))
+
+if __name__ == "__main__":
+    MazeGenerator(15, 15, [0, 0], [5, 5], 7, True)
