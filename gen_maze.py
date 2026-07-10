@@ -1,6 +1,4 @@
 """
-Handling cell flags, 2d arrays and board gen.
-Must be packagable into a distrib package.
 """
 
 import random
@@ -12,64 +10,8 @@ class Cell:
         self.y = y
         self.visited = visited
         self.walls = walls
-"""
-    method: remove_shared_wall(cell_current, cell_neihbour, direction:str) :
-        if dir is NORTH:
-            substract north from cell_current.walls bitmask
-            substract south from cell_neighb.walls bitmask
-        apply the same for east south and west
 
-    method: generate() -> list[list[Cell]]:
-        init history stack as empty list 
-        pick starting cell, set visited=true, push to historystack
-        while historystack is not empty:
-            current  = top item of history stack
-            valid_options = call get_univisitedneighbouts(current)
-            if valod options is not empty:
-                pick random choice direction neighor cell from list
-                set chosem_cell_visited = true
-                push chosen_cell t to histort stack
-            else
-                pop top item off hisorty stack (backtrack)
 
-    method: apply_pacman() -> None:
-        #rule1 corners are open
-        define corner_tples = [(0,0), (width-1,0), (0, height-1), (width-1,height-1)]
-        foor each (cx, cy) in corner_tuples:
-            force open at least one inner wall by sustracting it from the bitmask
-
-        #rule2 ensure center area loop space is clear
-        calc center_x= width//2, center_y= height//2
-        for x from center_x -1 to center_x + 1:
-         for y from center_y - 1 to center_1 + 1:
-            destroy inner walls between center cells 
-
-        #rule3 destroy dead-ends
-        for each cell in matrix:
-            count activate ramining walls by checking bitwise boundaries
-            if cell has 3 walls active
-                pick a random closed dir that doesnt blow past map borders
-                fetch cell sittin behind that wall side
-                call remove_wall(current_cell, neighbout_cell, chosen_dir)
-    
-    method execute_gen() -> list[lis[Cell]]:
-        call generate()
-        if perfect flag isTrue:
-            call force_forty_two()
-        else:
-            cal apply_pacman()
-        return self.matrix
-
-    method: export to hex strings () -> list[str]:
-        inti empty rows string list
-        for each row in matrix:
-            inti current ro string = ""
-            for each cell in current_row:
-                convert cell.walls int to uppercase hex
-                append hex to current-row_string
-            append cuurent row string to rowsstring list
-        return rows string list
-"""
 class MazeGenerator:
     NORTH = 1
     EAST = 2
@@ -87,19 +29,28 @@ class MazeGenerator:
             ) -> None:
         self.width = width
         self.height = height
-        self.entry_coord = entry_coord
-        self.exit_coord = exit_coord
+        self.entry_coord = tuple(entry_coord)
+        self.exit_coord = tuple(exit_coord)
         self.perfect = perfect
 
         random.seed(seed)
         self.blocked_cells: set[tuple[int, int]] = set()
-        self.grid: list[list[int]] = []
+        self.grid: list[list[Cell]] = []
         for y in range(self.height):
             row: list[Cell] = []
             for x in range(self.width):
                 row.append(Cell(x, y))
             self.grid.append(row)
         self._carve_42_pattern()
+        self._generate_perfect_maze()
+        if not self.perfect:
+            self._apply_pacman_rules()
+        en_x, en_y = self.entry_coord
+        ex_x, ex_y = self.exit_coord
+        if 0 <= en_x < self.width and 0 <= en_y < self.height:
+            self.grid[en_y][en_x].walls &= ~self.WEST
+        if 0 <= ex_x < self.width and 0 <= ex_y < self.height:
+            self.grid[ex_y][ex_x].walls &= ~self.EAST
         self.print_grid()
 
     
@@ -123,7 +74,8 @@ class MazeGenerator:
         for dx, dy in blocked_offsets:
             self.blocked_cells.add((start_x + dx, start_y + dy))
 
-    def _get_valid_neighbors(self, x: int, y:int
+    def _get_valid_neighbors(self, x: int, y:int,
+                             check_visited: bool = True
             )-> list[tuple[tuple[int, int], int, int]]:
         neighbors= []
         directions = [
@@ -136,36 +88,72 @@ class MazeGenerator:
             nx, ny = x + dx, y + dy
             if 0 <= nx < self.width and 0 <= ny < self.height:
                 if (nx, ny) not in self.blocked_cells:
-                    if not self.grid[ny][nx].visited:
-                        neighbors.append((nx, ny), wall_curr, wall_next)
+                    if not check_visited or not self.grid[ny][nx].visited:
+                        neighbors.append(((nx, ny), wall_curr, wall_next))
         return neighbors
 
     def _generate_perfect_maze(self) -> None:
         start_x, start_y = self.entry_coord
-        sef.grid[start_y][start_x].visited = True
-        stack [(start_x, start_y)]
+        self.grid[start_y][start_x].visited = True
+        stack = [(start_x, start_y)]
         while stack:
             cx, cy = stack[-1]
-            neighbors = self._get_valid_neighbors(cx, cy)
+            neighbors = self._get_valid_neighbors(cx, cy, check_visited=True)
             if neighbors:
-                for n in neighbors:
-                    
-                    stack.append(n)
-                    n.visited = True
-
+                (nx, ny), w_curr, w_next = random.choice(neighbors)
+                self.grid[cy][cx].walls &= ~w_curr
+                self.grid[ny][nx].walls &= ~w_next
+                self.grid[ny][nx].visited = True
+                stack.append((nx, ny))
             else:
-                stack.pop
+                stack.pop()
+
+    def _apply_pacman_rules(self) -> None:
+        for y in range(self.height):
+            for x in range(self.width):
+                # 1. Skip cells that are part of our blocked '42' pattern
+                if (x, y) in self.blocked_cells:
+                    continue
+                cell = self.grid[y][x] 
+                # 2. Check if the cell is a dead-end (exactly 3 walls standing)
+                if cell.walls.bit_count() == 3:
+                    # Look for any available neighbors to break into
+                    neighbors = self._get_valid_neighbors(x, y, check_visited=False) 
+                    if neighbors:
+                        # Pick a random neighbor and break the wall between them
+                        (nx, ny), w_curr, w_next = random.choice(neighbors)
+                        self.grid[y][x].walls &= ~w_curr
+                        self.grid[ny][nx].walls &= ~w_next
 
 #TESTING PRINT GRID       
     def print_grid(self) -> None:
+        print("+" + "---+" * self.width)
         for y in range(self.height):
-            row_chars = []
+            row_str = "|" if (0, y) in self.blocked_cells or (self.grid[y][0].walls & self.WEST) else " "
+
             for x in range(self.width):
                 if (x, y) in self.blocked_cells:
-                    row_chars.append("  ")
+                    cell_body = "██"
+                    east_wall = "█"
                 else:
-                    row_chars.append(f"{self.grid[y][x].walls}")
-            print(" ".join(row_chars))
+                    if (x, y) == self.entry_coord:
+                        cell_body = "S "
+                    elif (x, y) == self.exit_coord:
+                        cell_body = "E "
+                    else:
+                        cell_body = "  "
+                    east_wall = "|" if (self.grid[y][x].walls & self.EAST) else " "
+                row_str += cell_body + east_wall
+            print(row_str)
+            bottom_str = "+"
+            for x in range(self.width):
+                if (x, y) in self.blocked_cells:
+                    bottom_str += "███+"
+                elif self.grid[y][x].walls & self.SOUTH:
+                    bottom_str += "---+"
+                else:
+                    bottom_str += "   +"
+            print(bottom_str)
 
 if __name__ == "__main__":
-    MazeGenerator(15, 15, [0, 0], [5, 5], 7, True)
+    MazeGenerator(15, 15, [0, 0], [14, 14], 7, True)
