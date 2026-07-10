@@ -51,7 +51,6 @@ class MazeGenerator:
             self.grid[en_y][en_x].walls &= ~self.WEST
         if 0 <= ex_x < self.width and 0 <= ex_y < self.height:
             self.grid[ex_y][ex_x].walls &= ~self.EAST
-        self.print_grid()
 
     
     def _carve_42_pattern(self) -> set:

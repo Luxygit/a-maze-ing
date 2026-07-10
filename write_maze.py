@@ -50,8 +50,7 @@ class MazeWriter:
                 directional_path = self._convert_path_to_letters()
                 file.write(f"{directional_path}\n")
 
-            print(f"Successfully saved compliant maze blueprints layout
-                  to: {self.output_filename}")
+            print(f"Successfully saved compliant maze blueprints layouto: {self.output_filename}")
             return True
 
         except Exception as exc:
