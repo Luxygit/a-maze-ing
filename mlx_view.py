@@ -3,12 +3,11 @@ import os
 import mlx
 from typing import Any
 
-_EVENT_DESTROY_NOTIFY = 17
-
-WALL_COLORS = [0xFFFFFFFF, 0xFF39FF14, 0xFFFFA500, 0xFF00CFFF, 0xFFFF3CBE]
-
 
 class MlxView:
+
+    _EVENT_DESTROY_NOTIFY = 17
+    WALL_COLORS = [0xFFFFFFFF, 0xFF39FF14, 0xFFFFA500, 0xFF00CFFF, 0xFFFF3CBE]
 
     def __init__(self, generator, solver, regenerate_fn=None) -> None:
         self.generator = generator
@@ -29,15 +28,18 @@ class MlxView:
             sys.exit(1)
 
         self.win_ptr = self.mlx.mlx_new_window(
-            self.mlx_ptr, self.win_width, self.win_height, "A-Maze-ing Graphical Viewport"
+            self.mlx_ptr, self.win_width, self.win_height,
+            "A-Maze-ing Graphical Viewport"
         )
         if not self.win_ptr:
             print("Failed to build targeting window context.")
             sys.exit(1)
         self.mlx.mlx_key_hook(self.win_ptr, self._on_key, self)
-        self.mlx.mlx_hook(self.win_ptr, _EVENT_DESTROY_NOTIFY, 0, self._on_close, self)
+        self.mlx.mlx_hook(self.win_ptr, _EVENT_DESTROY_NOTIFY,
+                          0, self._on_close, self)
 
-    def _put_pixel_to_buffer(self, mv, size_line, bpp, x: int, y: int, color_hex: int) -> None:
+    def _put_pixel_to_buffer(self, mv, size_line, bpp, x: int,
+                             y: int, color_hex: int) -> None:
         if 0 <= x < self.win_width and 0 <= y < self.win_height:
             offset = y * size_line + x * bpp
             b = color_hex & 0xFF
@@ -52,13 +54,15 @@ class MlxView:
             except (IndexError, TypeError):
                 pass
 
-    def _draw_block(self, mv, size_line, bpp, cx: int, cy: int, color_hex: int) -> None:
+    def _draw_block(self, mv, size_line, bpp, cx: int, cy: int,
+                    color_hex: int) -> None:
         start_x = cx * self.cell_size
         start_y = cy * self.cell_size
         for y_offset in range(self.cell_size):
             for x_offset in range(self.cell_size):
                 self._put_pixel_to_buffer(
-                    mv, size_line, bpp, start_x + x_offset, start_y + y_offset, color_hex
+                    mv, size_line, bpp, start_x + x_offset,
+                    start_y + y_offset, color_hex
                 )
 
     def _draw_cell_walls(self, mv, size_line, bpp, cx: int, cy: int) -> None:
@@ -70,19 +74,26 @@ class MlxView:
 
         if cell.walls & self.generator.NORTH:
             for x in range(self.cell_size):
-                self._put_pixel_to_buffer(mv, size_line, bpp, start_x + x, start_y, wall_color)
+                self._put_pixel_to_buffer(mv, size_line,
+                                          bpp, start_x + x, start_y, wall_color)
 
         if cell.walls & self.generator.SOUTH:
             for x in range(self.cell_size):
-                self._put_pixel_to_buffer(mv, size_line, bpp, start_x + x, start_y + max_idx, wall_color)
+                self._put_pixel_to_buffer(mv,
+                                          size_line,
+                                          bpp, start_x + x,
+                                          start_y + max_idx,
+                                          wall_color)
 
         if cell.walls & self.generator.WEST:
             for y in range(self.cell_size):
-                self._put_pixel_to_buffer(mv, size_line, bpp, start_x, start_y + y, wall_color)
+                self._put_pixel_to_buffer(mv, size_line, bpp, start_x,
+                                          start_y + y, wall_color)
 
         if cell.walls & self.generator.EAST:
             for y in range(self.cell_size):
-                self._put_pixel_to_buffer(mv, size_line, bpp, start_x + max_idx, start_y + y, wall_color)
+                self._put_pixel_to_buffer(mv, size_line, bpp, start_x + max_idx,
+                                          start_y + y, wall_color)
 
     def _render(self) -> None:
         img_ptr = self.mlx.mlx_new_image(self.mlx_ptr, self.win_width, self.win_height)
@@ -101,10 +112,8 @@ class MlxView:
                     self._draw_block(mv, size_line, bpp, x, y, 0xFFFFFF00)
                 else:
                     self._draw_block(mv, size_line, bpp, x, y, 0xFF1C1C1C)
-
                 if (x, y) not in self.generator.blocked_cells:
                     self._draw_cell_walls(mv, size_line, bpp, x, y)
-
         self.mlx.mlx_clear_window(self.mlx_ptr, self.win_ptr)
         self.mlx.mlx_put_image_to_window(self.mlx_ptr, self.win_ptr, img_ptr, 0, 0)
         self.mlx.mlx_destroy_image(self.mlx_ptr, img_ptr)
@@ -153,14 +162,3 @@ class MlxView:
         param.mlx.mlx_loop_exit(param.mlx_ptr)
         param.force_emergency_exit()
         return 0
-
-
-if __name__ == "__main__":
-    import gen_maze
-    import solve_maze
-
-    maze_data = gen_maze.MazeGenerator(25, 21, (0, 0), (24, 20), 42, False)
-    path_data = solve_maze.MazeSolver(maze_data)
-
-    view = MlxView(maze_data, path_data)
-    view.run()

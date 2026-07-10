@@ -111,49 +111,12 @@ class MazeGenerator:
     def _apply_pacman_rules(self) -> None:
         for y in range(self.height):
             for x in range(self.width):
-                # 1. Skip cells that are part of our blocked '42' pattern
                 if (x, y) in self.blocked_cells:
                     continue
                 cell = self.grid[y][x] 
-                # 2. Check if the cell is a dead-end (exactly 3 walls standing)
                 if cell.walls.bit_count() == 3:
-                    # Look for any available neighbors to break into
                     neighbors = self._get_valid_neighbors(x, y, check_visited=False) 
                     if neighbors:
-                        # Pick a random neighbor and break the wall between them
                         (nx, ny), w_curr, w_next = random.choice(neighbors)
                         self.grid[y][x].walls &= ~w_curr
                         self.grid[ny][nx].walls &= ~w_next
-
-#TESTING PRINT GRID       
-    def print_grid(self) -> None:
-        print("+" + "---+" * self.width)
-        for y in range(self.height):
-            row_str = "|" if (0, y) in self.blocked_cells or (self.grid[y][0].walls & self.WEST) else " "
-
-            for x in range(self.width):
-                if (x, y) in self.blocked_cells:
-                    cell_body = "██"
-                    east_wall = "█"
-                else:
-                    if (x, y) == self.entry_coord:
-                        cell_body = "S "
-                    elif (x, y) == self.exit_coord:
-                        cell_body = "E "
-                    else:
-                        cell_body = "  "
-                    east_wall = "|" if (self.grid[y][x].walls & self.EAST) else " "
-                row_str += cell_body + east_wall
-            print(row_str)
-            bottom_str = "+"
-            for x in range(self.width):
-                if (x, y) in self.blocked_cells:
-                    bottom_str += "███+"
-                elif self.grid[y][x].walls & self.SOUTH:
-                    bottom_str += "---+"
-                else:
-                    bottom_str += "   +"
-            print(bottom_str)
-
-if __name__ == "__main__":
-    MazeGenerator(15, 15, [0, 0], [14, 14], 7, True)

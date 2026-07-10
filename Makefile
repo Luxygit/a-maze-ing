@@ -6,7 +6,7 @@ PYTHON      = $(VENV)/bin/python3
 PIP         = $(VENV)/bin/pip3
 
 # Default testing arguments (Width Height Seed Perfect)
-DEFAULT_ARGS = 21 21 42 True
+DEFAULT_ARGS = config.txt
 
 # Colors for clean terminal feedback
 GREEN       = \033[0;32m
