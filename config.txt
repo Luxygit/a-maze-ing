@@ -1,8 +1,10 @@
-# config file with settings. Lines with # are commented out 
+# A-Maze-ing default configuration file
+# lines starting with # are ignored
 
-WIDTH=10
-HEIGHT=10
+WIDTH=20
+HEIGHT=15
 ENTRY=0,0
-EXIT=5,5
+EXIT=19,14
 OUTPUT_FILE=maze.txt
 PERFECT=True
+SEED=42
