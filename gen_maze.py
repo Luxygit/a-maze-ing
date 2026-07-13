@@ -1,10 +1,13 @@
 """
+Maze generation through DFS algorithm and bitwise operations, while respecting
+both perfect and non perfect subject requirements.
 """
 
 import random
 
 
 class Cell:
+	"""blueprint for each single square in the maze grid"""
     def __init__(self, x: int, y: int, visited: bool = False, walls: int = 15) -> None:
         self.x = x
         self.y = y
@@ -13,6 +16,10 @@ class Cell:
 
 
 class MazeGenerator:
+	"""
+	Through bitmasking this class, creates a grid of cells, 
+	destroys walls between them and displays the 42 pattern when possible
+	"""
 	NORTH = 1
 	EAST = 2
 	SOUTH = 4
@@ -26,14 +33,15 @@ class MazeGenerator:
 			exit_coord: tuple[int, int],
 			seed: int,
 			perfect: bool
-			) -> None:
+			) -> None:,
 		self.width = width
 		self.height = height
 		self.entry_coord = tuple(entry_coord)
 		self.exit_coord = tuple(exit_coord)
 		self.perfect = perfect
-
+		#randomizing a seed number
 		random.seed(seed)
+		#init a unique set of blocked cell positions for the 42 pattern
 		self.blocked_cells: set[tuple[int, int]] = set()
 		self.grid: list[list[Cell]] = []
 		for y in range(self.height):
