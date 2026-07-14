@@ -7,8 +7,9 @@ import random
 
 
 class Cell:
-	"""blueprint for each single square in the maze grid"""
-    def __init__(self, x: int, y: int, visited: bool = False, walls: int = 15) -> None:
+    """blueprint for each single square in the maze grid"""
+    def __init__(self, x: int, y: int, visited: bool = False,
+                 walls: int = 15) -> None:
         self.x = x
         self.y = y
         self.visited = visited
@@ -16,51 +17,54 @@ class Cell:
 
 
 class MazeGenerator:
-	"""
-	Through bitmasking this class, creates a grid of cells, 
-	destroys walls between them and displays the 42 pattern when possible
-	"""
-	NORTH = 1
-	EAST = 2
-	SOUTH = 4
-	WEST = 8
+    """
+    Through bitmasking, this class, creates a grid of cells, 
+    destroys walls between them and displays the 42 pattern when possible
+    """
+    NORTH = 1
+    EAST = 2
+    SOUTH = 4
+    WEST = 8
 
-	def __init__(
-			self,
-			width: int,
-			height: int,
-			entry_coord: tuple[int, int],
-			exit_coord: tuple[int, int],
-			seed: int,
-			perfect: bool
-			) -> None:,
-		self.width = width
-		self.height = height
-		self.entry_coord = tuple(entry_coord)
-		self.exit_coord = tuple(exit_coord)
-		self.perfect = perfect
-		#randomizing a seed number
-		random.seed(seed)
-		#init a unique set of blocked cell positions for the 42 pattern
-		self.blocked_cells: set[tuple[int, int]] = set()
-		self.grid: list[list[Cell]] = []
-		for y in range(self.height):
-			row: list[Cell] = []
-			for x in range(self.width):
-				row.append(Cell(x, y))
-			self.grid.append(row)
-		self._carve_42_pattern()
-		self._generate_perfect_maze()
-		if not self.perfect:
-			self._apply_pacman_rules()
-		self._enforce_external_borders()
+    def __init__(
+            self,
+            width: int,
+            height: int,
+            entry_coord: tuple[int, int],
+            exit_coord: tuple[int, int],
+            seed: int,
+            perfect: bool
+            ) -> None:
+        self.width = width
+        self.height = height
+        self.entry_coord = tuple(entry_coord)
+        self.exit_coord = tuple(exit_coord)
+        self.perfect = perfect
+        #randomizing a seed number
+        random.seed(seed)
+        #init a unique set of blocked cell positions for the 42 pattern
+        self.blocked_cells: set[tuple[int, int]] = set()
+        self.grid: list[list[Cell]] = []
+        #looping through rows and columns to populate the grid
+        for y in range(self.height):
+            row: list[Cell] = []
+            for x in range(self.width):
+                row.append(Cell(x, y))
+            self.grid.append(row)
+        #calling conditional methods to modify the grid 
+        self._carve_42_pattern()
+        self._generate_perfect_maze()
+        if not self.perfect:
+            self._apply_pacman_rules()
+        self._enforce_external_borders()
 
-	def _carve_42_pattern(self) -> None:
-		if self.width < 9 or self.height < 7:
-			return
-		start_x = (self.width - 7) // 2
-		start_y = (self.height - 5) // 2
-		blocked_offsets = {
+    def _carve_42_pattern(self) -> None:
+        """conditionally drawing a 42 patter in the center of the maze"""
+        if self.width < 9 or self.height < 7:
+            return
+        start_x = (self.width - 7) // 2
+        start_y = (self.height - 5) // 2
+        blocked_offsets = {
                 (0, 0), (2, 0),
                 (0, 1), (2, 1),
                 (0, 2), (1, 2), (2, 2),
@@ -72,14 +76,17 @@ class MazeGenerator:
                 (4, 3),
                 (4, 4), (5, 4), (6, 4) 
                 }
-		for dx, dy in blocked_offsets:
-			self.blocked_cells.add((start_x + dx, start_y + dy))
+        for dx, dy in blocked_offsets:
+            self.blocked_cells.add((start_x + dx, start_y + dy))
 
-	def _get_valid_neighbors(self, x: int, y:int,
-		check_visited: bool = True
-        )-> list[tuple[tuple[int, int], int, int]]:
-		neighbors= []
-		directions = [
+    def _get_valid_neighbors(self,
+                          x: int,
+                          y: int,
+                          check_visited: bool = True
+                          )-> list[tuple[tuple[int, int], int, int]]:
+		"""checks if the 4 adjacent cells around coord x,y can be broken"""
+        neighbors = []
+        directions = [
                 (0, -1, self.NORTH, self.SOUTH),
                 (1, 0, self.EAST, self.WEST),
                 (0, 1, self.SOUTH, self.NORTH),
