@@ -1,9 +1,11 @@
-"""
-"""
+"""Shortest path solution through BFS algorithm"""
+
+from typing import Any
 
 
 class MazeSolver:
-    def __init__(self, generator) -> None:
+    """finding the shortest path to exit"""
+    def __init__(self, generator: Any) -> None:
         self.width = generator.width
         self.height = generator.height
         self.entry_coord = generator.entry_coord
@@ -16,6 +18,7 @@ class MazeSolver:
     def _get_walkable_neighbors(self, x: int, y: int,
                                 visited_set: set[tuple[int, int]]
                                 ) -> list[tuple[int, int]]:
+        """finding adjacent cells with open paths"""
         walkable = []
         directions = [
             (0, -1, 1),  # North
@@ -27,24 +30,41 @@ class MazeSolver:
         for dx, dy, wall_flag in directions:
             nx, ny = x + dx, y + dy
             if 0 <= nx < self.width and 0 <= ny < self.height:
-                if (nx, ny) not in self.blocked_cells and (nx, ny) not in visited_set:
+                if (nx, ny) not in self.blocked_cells and \
+                        (nx, ny) not in visited_set:
                     if (current_cell.walls & wall_flag) == 0:
                         walkable.append((nx, ny))
         return walkable
 
     def _solve(self) -> None:
+        """
+        using a queue FIFO first in first out to scan the maze layer
+        by layer, parent will store the cell we are in and its next neighbor
+        then the path is reconstructed from exit to start
+        """
         start_x, start_y = self.entry_coord
-        stack = [(start_x, start_y)]
+        if (start_x, start_y) == self.exit_coord:
+            self.solution_path = [(start_x, start_y)]
+            return
+
+        queue = [(start_x, start_y)]
         visited = {(start_x, start_y)}
-        while stack:
-            cx, cy = stack[-1]
+        parent = {}
+        while queue:
+            cx, cy = queue.pop(0)
             if (cx, cy) == self.exit_coord:
-                self.solution_path = list(stack)
-                return
+                break
             neighbors = self._get_walkable_neighbors(cx, cy, visited)
-            if neighbors:
-                nx, ny = neighbors[0]
+            for nx, ny in neighbors:
                 visited.add((nx, ny))
-                stack.append((nx, ny))
-            else:
-                stack.pop()
+                parent[(nx, ny)] = (cx, cy)
+                queue.append((nx, ny))
+        if self.exit_coord in parent or self.entry_coord == self.exit_coord:
+            path = []
+            curr = self.exit_coord
+            while curr != self.entry_coord:
+                path.append(curr)
+                curr = parent[curr]
+            path.append(self.entry_coord)
+            path.reverse()
+            self.solution_path = path

@@ -1,6 +1,7 @@
 """
-Maze generation through DFS algorithm and bitwise operations, while respecting
-both perfect and non perfect subject requirements.
+Maze generation through DFS algorithm Last-in First-out, and bitwise
+operations, while respecting both perfect and non perfect subject
+requirements.
 """
 
 import random
@@ -18,7 +19,7 @@ class Cell:
 
 class MazeGenerator:
     """
-    Through bitmasking, this class, creates a grid of cells, 
+    Through bitmasking, this class, creates a grid of cells,
     destroys walls between them and displays the 42 pattern when possible
     """
     NORTH = 1
@@ -40,28 +41,29 @@ class MazeGenerator:
         self.entry_coord = tuple(entry_coord)
         self.exit_coord = tuple(exit_coord)
         self.perfect = perfect
-        #randomizing a seed number
+        # randomizing a seed number
         random.seed(seed)
-        #init a unique set of blocked cell positions for the 42 pattern
+        # init a unique set of blocked cell positions for the 42 pattern
         self.blocked_cells: set[tuple[int, int]] = set()
         self.grid: list[list[Cell]] = []
-        #looping through rows and columns to populate the grid
+        # looping through rows and columns to populate the grid
         for y in range(self.height):
             row: list[Cell] = []
             for x in range(self.width):
                 row.append(Cell(x, y))
             self.grid.append(row)
-        #calling conditional methods to modify the grid 
-        self._carve_42_pattern()
-        self._generate_perfect_maze()
-        if not self.perfect:
-            self._apply_pacman_rules()
-        self._enforce_external_borders()
+        self.config_valid = self._carve_42_pattern()
+        # calling conditional methods to modify the grid
+        if self.config_valid:
+            self._generate_perfect_maze()
+            if not self.perfect:
+                self._apply_pacman_rules()
+            self._enforce_external_borders()
 
-    def _carve_42_pattern(self) -> None:
+    def _carve_42_pattern(self) -> bool:
         """conditionally drawing a 42 patter in the center of the maze"""
         if self.width < 9 or self.height < 7:
-            return
+            return True
         start_x = (self.width - 7) // 2
         start_y = (self.height - 5) // 2
         blocked_offsets = {
@@ -74,17 +76,30 @@ class MazeGenerator:
                                 (6, 1),
                 (4, 2), (5, 2), (6, 2),
                 (4, 3),
-                (4, 4), (5, 4), (6, 4) 
+                (4, 4), (5, 4), (6, 4)
                 }
         for dx, dy in blocked_offsets:
-            self.blocked_cells.add((start_x + dx, start_y + dy))
-
-    def _get_valid_neighbors(self,
+            abs_cell = (start_x + dx, start_y + dy)
+            if self.entry_cord == abs_cell or self.exit_coord == abs_cell:
+                print("Error: Entry or Exit cannot be inside 42 pattern")
+                return False
+            self.blocked_cells.add(abs_cell)
+        return True
+            
+    def _get_valid_neighbors(
+            self,
             x: int,
             y: int,
             check_visited: bool = True
-            )-> list[tuple[tuple[int, int], int, int]]:
-        """checks if the 4 adjacent cells around coord x,y can be broken"""
+    ) -> list[tuple[tuple[int, int], int, int]]:
+        """
+        checks if the 4 adjacent cells around coord x,y can be broken
+        taking into account dx,dy that are the direction steps,
+        wall_curr the bitmask for the starting border wall value
+        and wall_next for the neighbour wall
+        check_visited is passed to indicate if visited cells should
+        be re visited or not.
+        """
         neighbors = []
         directions = [
                 (0, -1, self.NORTH, self.SOUTH),
@@ -101,6 +116,13 @@ class MazeGenerator:
         return neighbors
 
     def _generate_perfect_maze(self) -> None:
+        """
+        looping thru neighbors to open walls and link them to the maze
+        comparing wall values via bitwise operations.
+        saves this neighbour in the stack memory to keep checking its
+        own neighbours and once its a dead end, it deletes it from the stack
+        to continue with the previous saved neighbour in the stack
+        """
         start_x, start_y = self.entry_coord
         self.grid[start_y][start_x].visited = True
         stack = [(start_x, start_y)]
@@ -117,18 +139,27 @@ class MazeGenerator:
                 stack.pop()
 
     def _apply_pacman_rules(self) -> None:
+        """
+        previos method only opened one random neighbours wall, but for
+        the non-perfect maze we open dead ends as well,
+        checking if their wall int in binary is 1 three times then it is a
+        dead end and chooses a random neighbor and opens their walls.
+        """
         for y in range(self.height):
             for x in range(self.width):
                 if (x, y) in self.blocked_cells:
                     continue
-                cell = self.grid[y][x] 
+                cell = self.grid[y][x]
                 if bin(cell.walls).count("1") == 3:
-                    neighbors = self._get_valid_neighbors(x, y, check_visited=False) 
+                    neighbors = self._get_valid_neighbors(
+                            x, y,
+                            check_visited=False)
                     if neighbors:
                         (nx, ny), w_curr, w_next = random.choice(neighbors)
                         self.grid[y][x].walls &= ~w_curr
                         self.grid[ny][nx].walls &= ~w_next
         if self.width > 1 and self.height > 1:
+            # opening up the 4 corners of the maze.
             self.grid[0][0].walls &= ~(self.EAST | self.SOUTH)
             self.grid[0][1].walls &= ~self.WEST
             self.grid[1][0].walls &= ~self.NORTH
@@ -144,9 +175,15 @@ class MazeGenerator:
             self.grid[br_y][br_x].walls &= ~(self.WEST | self.NORTH)
             self.grid[br_y][br_x - 1].walls &= ~self.EAST
             self.grid[br_y - 1][br_x].walls &= ~self.SOUTH
+        # opening up center corridor
         mid_x, mid_y = self.width // 2, self.height // 2
         if (mid_x, mid_y) not in self.blocked_cells:
-            self.grid[mid_y][mid_x].walls &= ~(self.NORTH | self.EAST | self.SOUTH | self.WEST)
+            self.grid[mid_y][mid_x].walls &= ~(
+                    self.NORTH |
+                    self.EAST |
+                    self.SOUTH |
+                    self.WEST
+                    )
             if mid_y > 0:
                 self.grid[mid_y - 1][mid_x].walls &= ~self.SOUTH
             if mid_x < self.width - 1:
@@ -157,6 +194,10 @@ class MazeGenerator:
                 self.grid[mid_y][mid_x - 1].walls &= ~self.EAST
 
     def _enforce_external_borders(self) -> None:
+        """
+        using the bitwise OR assignment and looping thru every cell
+        of the borders it modifies that outer border specific bit to 1
+        """
         for y in range(self.height):
             for x in range(self.width):
                 if x == 0:
