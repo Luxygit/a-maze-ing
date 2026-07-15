@@ -12,3 +12,7 @@ license = { file = "LICENSE.md" }
 
 [tool.setuptools]
 py-modules = ["gen_maze"]
+
+[[tool.mypy.overrides]]
+module = ["mlx.*", "mlx"]
+ignore_missing_imports = true

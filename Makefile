@@ -23,11 +23,11 @@ clean:
 	rm -rf __pycache__ */__pycache__ .mypy_cache dist build *.egg-info
 
 lint:
-	$(PYTHON) -m flake8 *.py
-	$(PYTHON) -m mypy *.py --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	flake8 *.py
+	mypy *.py --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
-	$(PYTHON) -m flake8 *.py
-	$(PYTHON) -m mypy *.py --strict
+	flake8 *.py
+	mypy *.py --strict
 
 .PHONY: all install run debug clean lint lint-strict
