@@ -97,8 +97,8 @@ class MazeGenerator:
         taking into account dx,dy that are the direction steps,
         wall_curr the bitmask for the starting border wall value
         and wall_next for the neighbour wall
-        check_visited is passed to indicate if visited cells should
-        be re visited or not.
+        check_visited is passed to indicate if the algorithm should 
+        care or not if cells were already visited. 
         """
         neighbors = []
         directions = [
