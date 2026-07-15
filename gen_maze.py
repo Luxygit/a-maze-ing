@@ -98,7 +98,7 @@ class MazeGenerator:
         wall_curr the bitmask for the starting border wall value
         and wall_next for the neighbour wall
         check_visited is passed to indicate if the algorithm should 
-        care or not if cells were already visited. 
+        care or not if cells were already visited and revisit them. 
         """
         neighbors = []
         directions = [
