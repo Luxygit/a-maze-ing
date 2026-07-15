@@ -22,7 +22,6 @@ displayed in a graphical window using the MiniLibX (MLX) library.
 ### Installation
 
 python3 -m venv .venv
-.venv/bin/pip install --upgrade pip
 .venv/bin/pip install mlx-2_2-py3-none-any.whl
 
 make (or make install) does this automatically.
@@ -49,13 +48,12 @@ Once the window is open:
 
 ### Makefile targets
 
-- make install : create the virtual environment and install dependencies
-- make run     : run the project (`ARGS="config.txt"` to override the config file)
-- make debug   : run the project under `pdb`
-- make lint    : run `flake8` and `mypy`
-- make clean   : remove caches and stop any hanging window process
-- make fclean  : remove the virtual environment too
-- make re      : `fclean` + `install`
+- make install      : create the virtual environment and install dependencies
+- make run          : run the project (ARGS="config.txt" to override the config file)
+- make debug        : run the project under pdb pythons debugger
+- make clean        : remove caches and stop any hanging window process
+- make lint         : run flake8 and mypy
+- make lint-strict  : execute the commands flake8 . and mypy . --strict
 
 ## Config File Format
 
@@ -83,9 +81,9 @@ unexplored side. The search ends once the stack is empty, which produces a
 spanning tree that touches every reachable cell exactly once: a perfect maze.
 
 For PERFECT=False, extra walls are then knocked down between remaining
-dead-end cells and one of their neighbours, which introduces loops (so the
-board is no longer a tree) while checking that no 3x3 block of cells ends up
-fully open, to respect the maximum corridor width rule.
+dead-end cells and one of their neighbours, which loops while checking that 
+no 3x3 block of cells ends up fully open, to respect the maximum corridor 
+width rule.
 
 ### Why DFS?
 
@@ -109,12 +107,25 @@ The maze generation and solving logic lives in a single standalone module,
 mazegen.py, with no dependency on MLX or on any other project file. It
 exposes one class, MazeGenerator.
 
-This module is packaged as mazegen-1.0.0-py3-none-any.whl at the root of the
-repository, built from mazegen.py and pyproject.toml. To rebuild it:
+This module is packaged as mazegen-.whl at the root of the
+repository, built from gen_maze.py and pyproject.toml via python3 -m build
+To rebuild it:
 
 python3 -m venv build_env
-build_env/bin/pip install --upgrade pip build
-build_env/bin/python -m build --wheel
+pip install mazegen-.whl
+
+import example:
+
+from gen_maze import MazeGenerator
+maze = MazeGenerator(
+    width=15,
+    height=15,
+    entry_coord=(1, 1),
+    exit_coord=(13, 13),
+    seed=12345,
+    perfect=False
+)
+print(f"Cell (1,1) wall integer: {maze.grid[1][1].walls}")
 
 The main project (a_maze_ing.py, gen_maze.py, solve_maze.py, write_maze.py
 mlx_view.py) is a separate layer on top of it: config parsing, output
@@ -137,23 +148,23 @@ AI (Claude & Gemini) were used to:
 
 ## Team and Project Management
 
-- **Roles**: Both members of the team worked on their or own versions
+- Roles: Both members of the team worked on their or own versions
     of the entire project, so in the end, the final version implemented
     the best approach for every part from each member.
-- **Planning**: First we had to do some research about way of implementing
+- Planning: First we had to do some research about way of implementing
     any sort of maze generating algorithm, then once that was covered and
     the scope of the project seemd relatively small, we decided to make
     it more interesting by using the Mlx lib as an output.
     Once we had our own versions on how to do this and discussed
     and merged them into one, we polished the bugs and edge cases which in 
     the end were not many and were quite easy to debug.
-- **What worked well / what could be improved**: The algorithm implementation
+- What worked well / what could be improved: The algorithm implementation
     was the easiest to get along with how to create and solve the maze.
     But the Mlx documentation provided seemed to obscure and hard to 
     analyze and comprehend, it is something that almost made us drop that
     part of the project.
-- **Tools used**: Python3, MiniLibX (MLX), flake8, mypy, git
+- Tools used: Python3, MiniLibX (MLX), flake8, mypy, git
 
 ## Licensing
 
-This project is distributed under the MIT license, see `LICENSE.md`.
+This project is distributed under the MIT license, see LICENSE.md.

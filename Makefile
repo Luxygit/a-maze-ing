@@ -11,9 +11,7 @@ $(VENV):
 	python3 -m venv $(VENV)
 
 install: $(VENV)
-	@if [ -f *.whl ]; then \
-		$(PIP) install *.whl; \
-	fi
+	@if [ -f *.whl ]; then $(PIP) install *.whl; fi
 
 run:
 	$(PYTHON) $(SRC) $(CONFIG)
@@ -22,14 +20,14 @@ debug:
 	$(PYTHON) -m pdb $(SRC) $(CONFIG)
 
 clean:
-	rm -rf __pycache__ */__pycache__ .mypy_cache
+	rm -rf __pycache__ */__pycache__ .mypy_cache dist build *.egg-info
 
 lint:
-	flake8 .
-	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	$(PYTHON) -m flake8 *.py
+	$(PYTHON) -m mypy *.py --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
-	flake8 .
-	mypy . --strict
+	$(PYTHON) -m flake8 *.py
+	$(PYTHON) -m mypy *.py --strict
 
 .PHONY: all install run debug clean lint lint-strict
