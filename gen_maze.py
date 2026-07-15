@@ -85,7 +85,7 @@ class MazeGenerator:
                 return False
             self.blocked_cells.add(abs_cell)
         return True
-            
+
     def _get_valid_neighbors(
             self,
             x: int,
