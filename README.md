@@ -50,10 +50,10 @@ program exits without crashing.
 
 Once the window is open:
 
-1     | Re-generate a new maze        
-2     | Show / hide the shortest path 
-3     | Change the wall colours       
-4/ESC | Quit                          
+1         | Re-generate a new maze        
+2         | Show / hide the shortest path 
+3         | Change the wall colours         
+4/ESC     | Quit                       
 
 ### Makefile targets
 
