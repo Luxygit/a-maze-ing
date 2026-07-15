@@ -1,13 +1,18 @@
-import os
+from typing import Any
 
 
 class MazeWriter:
-    def __init__(self, generator, solver, output_filename: str) -> None:
+    """in charge of generating the txt file of maze struct and solution"""
+    def __init__(self, generator: Any,
+                 solver: Any,
+                 output_filename: str) -> None:
+        """using gen_maze and solve_maze objects"""
         self.generator = generator
         self.solver = solver
         self.output_filename = output_filename
 
     def _convert_path_to_letters(self) -> str:
+        """translating solved path into NESW chars"""
         path = self.solver.solution_path
         if not path or len(path) < 2:
             return ""
@@ -29,6 +34,7 @@ class MazeWriter:
         return "".join(path_letters)
 
     def write_to_file(self) -> bool:
+        """saving translation in a txt file"""
         try:
             with open(self.output_filename, "w") as file:
                 for y in range(self.generator.height):
@@ -50,9 +56,9 @@ class MazeWriter:
                 directional_path = self._convert_path_to_letters()
                 file.write(f"{directional_path}\n")
 
-            print(f"Successfully saved compliant maze blueprints layouto: {self.output_filename}")
+            print(f"Successfully saved maze to: {self.output_filename}")
             return True
 
-        except Exception as exc:
-            print(f"Error: Failed to write out to target file output context. {exc}")
+        except Exception as e:
+            print(f"Error: Failed to write to target file {e}")
             return False

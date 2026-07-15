@@ -80,7 +80,7 @@ class MazeGenerator:
                 }
         for dx, dy in blocked_offsets:
             abs_cell = (start_x + dx, start_y + dy)
-            if self.entry_cord == abs_cell or self.exit_coord == abs_cell:
+            if self.entry_coord == abs_cell or self.exit_coord == abs_cell:
                 print("Error: Entry or Exit cannot be inside 42 pattern")
                 return False
             self.blocked_cells.add(abs_cell)

@@ -1,6 +1,6 @@
 import sys
 import os
-import mlx
+import mlx # type: ignore
 from typing import Any
 
 
