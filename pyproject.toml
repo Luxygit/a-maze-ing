@@ -11,4 +11,4 @@ requires-python = ">=3.10"
 license = { file = "LICENSE.md" }
 
 [tool.setuptools]
-py-modules = ["mazegen"]
+py-modules = ["gen_maze"]
