@@ -22,7 +22,7 @@ displayed in a graphical window using the MiniLibX (MLX) library.
 ### Installation
 
 python3 -m venv .venv
-.venv/bin/pip install mlx-2_2-py3-none-any.whl
+pip install mlx-2_2-py3-none-any.whl
 
 make (or make install) does this automatically.
 
