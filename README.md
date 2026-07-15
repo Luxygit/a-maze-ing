@@ -122,7 +122,7 @@ To rebuild it:
 
 python3 -m venv build_env
 pip install mazegen-.whl
-
+```
 import example:
 
 from gen_maze import MazeGenerator
@@ -134,8 +134,8 @@ maze = MazeGenerator(
     seed=12345,
     perfect=False
 )
-print(f"Cell (1,1) wall integer: {maze.grid[1][1].walls}")
-
+print(f"Cell (1,1) wall integer: {maze.grid[1][1].walls}")'
+```
 The main project (a_maze_ing.py, gen_maze.py, solve_maze.py, write_maze.py
 mlx_view.py) is a separate layer on top of it: config parsing, output
 file writing, and the MLX display.
