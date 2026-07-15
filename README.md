@@ -26,6 +26,15 @@ python3 -m venv .venv
 
 make (or make install) does this automatically.
 
+### Debugging
+Using make pdb we got access to pythons debugger to examine the program:
+- n (Next): Executes the current line and moves to the next line
+- s (Step): Steps inside a function call
+- c (Continue): Lets the program run normally until it hits a crash or finishes
+- p <variable> (Print): Displays the live contents of any variable
+- l (List): Prints the surrounding lines of code
+- q (Quit): Instantly terminates the debugger
+
 ### Execution
 
 python3 a_maze_ing.py config.txt
@@ -57,7 +66,7 @@ Once the window is open:
 
 ## Config File Format
 
-One `KEY=VALUE` pair per line. Lines starting with `#` are ignored.
+One KEY=VALUE pair per line. Lines starting with # are ignored.
 
  Key         | Description                         | Example            
  WIDTH       | Maze width in cells                 | WIDTH=20            
@@ -68,7 +77,7 @@ One `KEY=VALUE` pair per line. Lines starting with `#` are ignored.
  PERFECT     | Perfect maze or Pac-Man board       | PERFECT=True        
  SEED        | Optional, integer, reproducibility  | SEED=42             
 
-Minimum size for the patter to appear is WIDTH >= 9 and HEIGHT >= 7.
+Minimum size for the patter to appear is WIDTH >= 13 and HEIGHT >= 9.
 
 ## Maze Generation Algorithm
 
