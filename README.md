@@ -58,7 +58,7 @@ Once the window is open:
 ### Makefile targets
 
 - make install      : create the virtual environment and install dependencies
-- make run          : run the project (ARGS="config.txt" to override the config file)
+- make run          : run the project with a default config file
 - make debug        : run the project under pdb pythons debugger
 - make clean        : remove caches and stop any hanging window process
 - make lint         : run flake8 and mypy
