@@ -1,10 +1,10 @@
 # A-Maze-ing default configuration file
 # lines starting with # are ignored
 
-WIDTH=40
-HEIGHT=40
+WIDTH=50
+HEIGHT=50
 ENTRY=3,3
-EXIT=39,39
+EXIT=40,0
 OUTPUT_FILE=maze.txt
 PERFECT=False
-SEED=42
+SEED=69

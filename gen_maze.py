@@ -62,9 +62,9 @@ class MazeGenerator:
 
     def _carve_42_pattern(self) -> bool:
         """conditionally drawing a 42 patter in the center of the maze"""
-        if self.width < 9 or self.height < 7:
+        if self.width < 13 or self.height < 9:
             return True
-        start_x = (self.width - 7) // 2
+        start_x = (self.width - 9) // 2
         start_y = (self.height - 5) // 2
         blocked_offsets = {
                 (0, 0), (2, 0),
@@ -72,11 +72,11 @@ class MazeGenerator:
                 (0, 2), (1, 2), (2, 2),
                         (2, 3),
                         (2, 4),
-                (4, 0), (5, 0), (6, 0),
-                                (6, 1),
-                (4, 2), (5, 2), (6, 2),
-                (4, 3),
-                (4, 4), (5, 4), (6, 4)
+                (6, 0), (7, 0), (8, 0),
+                                (8, 1),
+                (6, 2), (7, 2), (8, 2),
+                (6, 3),
+                (6, 4), (7, 4), (8, 4)
                 }
         for dx, dy in blocked_offsets:
             abs_cell = (start_x + dx, start_y + dy)
@@ -145,32 +145,43 @@ class MazeGenerator:
         checking if their wall int in binary is 1 three times then it is a
         dead end and chooses a random neighbor and opens their walls.
         """
-        for y in range(self.height):
-            for x in range(self.width):
-                if (x, y) in self.blocked_cells:
-                    continue
-                cell = self.grid[y][x]
-                if bin(cell.walls).count("1") == 3:
-                    neighbors = self._get_valid_neighbors(
-                            x, y,
-                            check_visited=False)
-                    if neighbors:
-                        (nx, ny), w_curr, w_next = random.choice(neighbors)
-                        self.grid[y][x].walls &= ~w_curr
-                        self.grid[ny][nx].walls &= ~w_next
+        max_sweeps = self.width * self.height
+        sweep_count = 0
+        while sweep_count < max_sweeps:
+            dead_ends_found = False
+            for y in range(self.height):
+                for x in range(self.width):
+                    if (x, y) in self.blocked_cells:
+                        continue
+                    cell = self.grid[y][x]
+                    if bin(cell.walls).count("1") == 3:
+                        neighbors = self._get_valid_neighbors(
+                                x, y,
+                                check_visited=False)
+                        if neighbors:
+                            (nx, ny), w_curr, w_next = random.choice(neighbors)
+                            self.grid[y][x].walls &= ~w_curr
+                            self.grid[ny][nx].walls &= ~w_next
+                            dead_ends_found = True
+            sweep_count += 1
+            if not dead_ends_found:
+                break
         if self.width > 1 and self.height > 1:
             # opening up the 4 corners of the maze.
             self.grid[0][0].walls &= ~(self.EAST | self.SOUTH)
             self.grid[0][1].walls &= ~self.WEST
             self.grid[1][0].walls &= ~self.NORTH
+            # top right corner
             tr_x = self.width - 1
             self.grid[0][tr_x].walls &= ~(self.WEST | self.SOUTH)
             self.grid[0][tr_x - 1].walls &= ~self.EAST
             self.grid[1][tr_x].walls &= ~self.NORTH
+            # bottom left corner
             bl_y = self.height - 1
             self.grid[bl_y][0].walls &= ~(self.EAST | self.NORTH)
             self.grid[bl_y][1].walls &= ~self.WEST
             self.grid[bl_y - 1][0].walls &= ~self.SOUTH
+            # bottom right corner
             br_x, br_y = self.width - 1, self.height - 1
             self.grid[br_y][br_x].walls &= ~(self.WEST | self.NORTH)
             self.grid[br_y][br_x - 1].walls &= ~self.EAST
@@ -184,14 +195,24 @@ class MazeGenerator:
                     self.SOUTH |
                     self.WEST
                     )
-            if mid_y > 0:
+            if mid_y > 0 and (mid_x, mid_y - 1) not in self.blocked_cells:
                 self.grid[mid_y - 1][mid_x].walls &= ~self.SOUTH
-            if mid_x < self.width - 1:
+            else:
+                self.grid[mid_y][mid_x].walls |= self.NORTH
+            if mid_x < self.width - 1 and (
+                    mid_x + 1, mid_y) not in self.blocked_cells:
                 self.grid[mid_y][mid_x + 1].walls &= ~self.WEST
-            if mid_y < self.height - 1:
+            else:
+                self.grid[mid_y][mid_x].walls |= self.EAST
+            if mid_y < self.height - 1 and (
+                    mid_x, mid_y + 1) not in self.blocked_cells:
                 self.grid[mid_y + 1][mid_x].walls &= ~self.NORTH
-            if mid_x > 0:
+            else:
+                self.grid[mid_y][mid_x].walls |= self.SOUTH
+            if mid_x > 0 and (mid_x - 1, mid_y) not in self.blocked_cells:
                 self.grid[mid_y][mid_x - 1].walls &= ~self.EAST
+            else:
+                self.grid[mid_y][mid_x].walls |= self.WEST
 
     def _enforce_external_borders(self) -> None:
         """

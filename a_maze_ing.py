@@ -74,13 +74,13 @@ class AMazeIng:
             if "SEED" in config_data:
                 self.seed = int(config_data["SEED"])
                 if not (0 <= self.seed <= 2147483647):
-                    print("Error: Seed must be a postiive int")
+                    print("Error: Seed must be a positive int")
                     return False
         except ValueError:
             print("Error: Invalid configuration.")
             return False
-        if not (4 <= self.width <= 80) or not (4 <= self.height <= 80):
-            print("Error: Dimensions should be between 4x4 and 80x80")
+        if not (4 <= self.width <= 50) or not (4 <= self.height <= 50):
+            print("Error: Dimensions should be between 4x4 and 50x50")
             return False
         if not (0 <= en_x < self.width and 0 <= en_y < self.height):
             print("Error: ENTRY coordinates are outside the maze bounds.")
@@ -91,7 +91,7 @@ class AMazeIng:
         if not (0 <= ex_x < self.width and 0 <= ex_y < self.height):
             print("Error: EXIT coordinates are outside the maze bounds.")
             return False
-        if self.width < 9 or self.height < 7:
+        if self.width < 13 or self.height < 9:
             print("Notice: Maze too small to fit the '42' pattern.")
         return True
 

@@ -18,7 +18,7 @@ class MlxView:
         self.regenerate_fn = regenerate_fn
         self.show_path = True
         self.color_idx = 0
-        self.cell_size = 24
+        self.cell_size = 40
         self.win_width = self.generator.width * self.cell_size
         self.win_height = self.generator.height * self.cell_size
         self.mlx = mlx.Mlx()
@@ -107,6 +107,23 @@ class MlxView:
         self.mlx.mlx_put_image_to_window(
                 self.mlx_ptr, self.win_ptr, img_ptr, 0, 0)
         self.mlx.mlx_destroy_image(self.mlx_ptr, img_ptr)
+        en_x, en_y = self.generator.entry_coord
+        ex_x, ex_y = self.generator.exit_coord
+        # Calculate pixel centers inside the tiles for clean text centering
+        en_pixel_x = en_x * self.cell_size + 8
+        en_pixel_y = en_y * self.cell_size + 4
+        ex_pixel_x = ex_x * self.cell_size + 8
+        ex_pixel_y = ex_y * self.cell_size + 4
+        # Draw character 'S' in bright white (0xFFFFFF) on the Entry
+        self.mlx.mlx_string_put(
+            self.mlx_ptr, self.win_ptr,
+            en_pixel_x, en_pixel_y, 0xFFFFFF, "S"
+        )
+        # Draw character 'E' in bright white (0xFFFFFF) on the Exit
+        self.mlx.mlx_string_put(
+            self.mlx_ptr, self.win_ptr,
+            ex_pixel_x, ex_pixel_y, 0xFFFFFF, "E"
+        )
         self.mlx.mlx_do_sync(self.mlx_ptr)
 
     def force_emergency_exit(self) -> None:
