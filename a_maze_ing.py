@@ -22,7 +22,7 @@ class AMazeIng:
         self.entry_coord = (0, 0)
         self.exit_coord = (0, 0)
         self.output_file = "maze.txt"
-        self.view = 
+        self.view: Any = None
 
     def parse_config_file(self) -> bool:
         """validating and getting config settings from a file"""
