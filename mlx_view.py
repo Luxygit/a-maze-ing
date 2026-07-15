@@ -18,7 +18,7 @@ class MlxView:
         self.regenerate_fn = regenerate_fn
         self.show_path = True
         self.color_idx = 0
-        self.cell_size = 40
+        self.cell_size = 35
         self.win_width = self.generator.width * self.cell_size
         self.win_height = self.generator.height * self.cell_size
         self.mlx = mlx.Mlx()
