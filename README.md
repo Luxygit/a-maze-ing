@@ -117,12 +117,20 @@ mazegen.py, with no dependency on MLX or on any other project file. It
 exposes one class, MazeGenerator.
 
 This module is packaged as mazegen-.whl at the root of the
-repository, built from gen_maze.py and pyproject.toml via python3 -m build
-To rebuild it:
-
-python3 -m venv build_env
-pip install mazegen-.whl
+repository, built from gen_maze.py and pyproject.toml.
+To build it:
 ```
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade build
+python3 -m build
+cp dist/*.whl .
+```
+
+To use it:
+```
+pip install mazegen-*.whl
+
 import example:
 
 from gen_maze import MazeGenerator
